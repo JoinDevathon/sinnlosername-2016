@@ -35,6 +35,8 @@ public class IOModuleBlock implements MachineBlock {
     public void load(Location location) {
         this.location = location;
         location.getBlock().setMetadata("$blockType", new FixedMetadataValue(DevathonPlugin.helper().plugin(), type().name()));
+
+        storages.forEach(s -> s.setIoModule(this));
     }
 
     @Override
@@ -77,6 +79,8 @@ public class IOModuleBlock implements MachineBlock {
         }
 
         terminal.getIOModules().add(this);
+        terminal.updateCounters();
+
         e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "Successfully connected!");
 
         load(e.getBlock().getLocation());
@@ -87,6 +91,7 @@ public class IOModuleBlock implements MachineBlock {
     public void breakBlock(BlockBreakEvent e) {
         e.getPlayer().sendMessage("br IOModule");
         terminal.getIOModules().remove(this);
+        terminal.updateCounters();
     }
 
     @Override

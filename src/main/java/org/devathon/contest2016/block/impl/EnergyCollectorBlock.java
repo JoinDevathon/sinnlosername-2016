@@ -20,6 +20,7 @@ public class EnergyCollectorBlock implements MachineBlock {
 
     public static final String ITEM_NAME = "§6§lEnergy Collector";
 
+    private int power = 1;
     private transient Location location;
     private transient TerminalBlock terminal;
 
@@ -50,6 +51,7 @@ public class EnergyCollectorBlock implements MachineBlock {
                 .get(new SerializeableLocation(e.getBlockAgainst().getLocation()));
 
         terminal.getCollectors().add(this);
+        terminal.updateCounters();
 
         e.getPlayer().sendMessage("You placed an energy collector! :o");
     }
@@ -63,6 +65,7 @@ public class EnergyCollectorBlock implements MachineBlock {
     @Override
     public void breakBlock(BlockBreakEvent e) {
         terminal.getCollectors().remove(this);
+        terminal.updateCounters();
         e.getPlayer().sendMessage("Your broke an energy collector");
     }
 
@@ -89,5 +92,9 @@ public class EnergyCollectorBlock implements MachineBlock {
     public boolean is(Block block) {
         return block.getLocation().equals(location) &&
                 block.hasMetadata("$blockType") && block.getMetadata("$blockType").get(0).asString().equals(type().name());
+    }
+
+    public int getPower() {
+        return power;
     }
 }

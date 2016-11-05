@@ -8,11 +8,13 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scheduler.BukkitTask;
 import org.devathon.contest2016.DevathonPlugin;
 import org.devathon.contest2016.block.BlockType;
 import org.devathon.contest2016.block.MachineBlock;
 import org.devathon.contest2016.builder.Builder;
 import org.devathon.contest2016.builder.impl.ItemBuilder;
+import org.devathon.contest2016.builder.impl.ThreadBuilder;
 import org.devathon.contest2016.inventory.ClickAction;
 import org.devathon.contest2016.inventory.InventoryMenu;
 
@@ -28,9 +30,11 @@ public class TerminalBlock implements MachineBlock {
     private final Set<EnergyCollectorBlock> collectors = new HashSet<>();
     private final Set<IOModuleBlock> ioModules = new HashSet<>();
 
-    private final long energy = 0;
+    private final int energy = 0;
 
-    private final transient InventoryMenu menu = new InventoryMenu(45, "§6§lTerminal");
+    private transient BukkitTask task;
+    private transient int lastEnergy = -1;
+    private transient InventoryMenu menu;
     private transient Location location;
 
     @Override
@@ -41,25 +45,38 @@ public class TerminalBlock implements MachineBlock {
         collectors.forEach(c -> c.setTerminal(this));
         ioModules.forEach(c -> c.setTerminal(this));
 
-        /*
-        0 1 2  3 4 5  6 7 8
 
-         */
+        final ItemStack greyGlass =
+                Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 7).name(" ").build();
+
+        menu = new InventoryMenu(45, "§6§lTerminal");
+        menu.setSame(greyGlass, ClickAction.CANCEL, 0, 1, 2, 6, 7, 8);
+
 
         updateCounters();
+        updateEnergy();
 
+        task = Builder.of(ThreadBuilder.class).with(() -> {
+
+
+
+
+
+        }).start(false, 20).build();
 
     }
 
-    private void updateCounters() {
+    public void updateCounters() {
 
         // ioModule count
         menu.set(Builder.of(ItemBuilder.class)
-                .item(Material.JUKEBOX, ioModules.size()).name(IOModuleBlock.ITEM_NAME).build(), 3, ClickAction.CANCEL);
+                .item(Material.JUKEBOX, ioModules.size()).name(IOModuleBlock.ITEM_NAME)
+                .lore("§aConntected: §7" + ioModules.size()).build(), 3, ClickAction.CANCEL);
 
         // collector count
         menu.set(Builder.of(ItemBuilder.class)
-                .item(Material.SEA_LANTERN, collectors.size()).name(EnergyCollectorBlock.ITEM_NAME).build(), 4, ClickAction.CANCEL);
+                .item(Material.SEA_LANTERN, collectors.size()).name(EnergyCollectorBlock.ITEM_NAME)
+                .lore("§aConntected: §7" + collectors.size()).build(), 4, ClickAction.CANCEL);
 
         // storage count
         int i = 0;
@@ -67,7 +84,65 @@ public class TerminalBlock implements MachineBlock {
             i += ioModule.getStorages().size();
 
         menu.set(Builder.of(ItemBuilder.class)
-                .item(Material.ENDER_CHEST, i).name(StorageBlock.ITEM_NAME).build(), 5, ClickAction.CANCEL);
+                .item(Material.ENDER_CHEST, i).name(StorageBlock.ITEM_NAME)
+                .lore("§aConntected: §7" + i).build(), 5, ClickAction.CANCEL);
+
+        menu.update();
+    }
+
+    public void updateEnergy() {
+
+        short glassType = 7;
+        int height = 0;
+
+
+                /*
+        #0 #1 #2  #3 #4 #5  #6 #7 #8
+        #9 10 11  12 13 14  15 16 17
+        18 19 20  21 22 23  24 25 26
+        27 28 29  30 31 32  33 34 35
+        36 37 38  39 40 41  42 43 44
+
+         */
+
+
+        // 100.000.000
+        if (energy > 10000000) {
+            height = 4;
+            glassType = 5;
+        } else if (energy > 50000) {
+            height = 3;
+            glassType = 4;
+        } else if (energy > 5000) {
+            height = 1;
+            glassType = 4;
+        } else if (energy > 0) {
+            height = 1;
+            glassType = 14;
+        }
+
+        int hc = 0;
+
+        while (hc <= height) {
+            menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, glassType)
+                    .name("§a§lEnergy: §7" + energy).build(), 36 - (hc * 9), ClickAction.CANCEL);
+
+            menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, glassType)
+                    .name("§a§lEnergy: §7" + energy).build(), 44 - (hc * 9), ClickAction.CANCEL);
+
+            hc++;
+        }
+
+        while (hc < 4) {
+            menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 7)
+                    .name("§a§lEnergy: §7" + energy).build(), 36 - (hc * 9), ClickAction.CANCEL);
+
+            menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 7)
+                    .name("§a§lEnergy: §7" + energy).build(), 44 - (hc * 9), ClickAction.CANCEL);
+
+            hc++;
+        }
+
 
     }
 
@@ -84,13 +159,7 @@ public class TerminalBlock implements MachineBlock {
 
             menu.open(e.getPlayer());
 
-
         }
-
-
-
-
-
 
         e.getPlayer().sendMessage("You interacted with a terminal");
         e.getPlayer().sendMessage("This terminal is connected with " + collectors.size() + " collectors");

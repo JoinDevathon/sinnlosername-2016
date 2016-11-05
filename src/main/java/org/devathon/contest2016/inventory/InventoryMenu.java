@@ -41,6 +41,11 @@ public class InventoryMenu implements Closeable {
         items[slot] = new InventoryItem(item, action);
     }
 
+    public void setSame(ItemStack item, ClickAction action, int... slots) {
+        for (int slot : slots)
+            set(item, slot, action);
+    }
+
     public void update() {
 
         for (int i = 0; i < items.length; i++) {
@@ -62,7 +67,6 @@ public class InventoryMenu implements Closeable {
     public ClickAction getAction(int i) {
         final InventoryItem item = items[i];
         return item == null ? null : item.getAction();
-        s
     }
 
     @Override

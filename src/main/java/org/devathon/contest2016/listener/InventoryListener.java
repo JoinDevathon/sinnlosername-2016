@@ -23,6 +23,8 @@ public class InventoryListener implements Listener {
 
             final ClickAction action = menu.getAction(e.getSlot());
 
+            if (action == null) continue;
+
             action.click(e);
         }
     }

@@ -59,6 +59,8 @@ public class StorageBlock implements MachineBlock {
 
         ioModule.getStorages().add(this);
 
+        ioModule.getTerminal().updateCounters();
+
         e.getPlayer().sendMessage("You placed a storage block!");
 
     }
@@ -68,6 +70,7 @@ public class StorageBlock implements MachineBlock {
         e.getPlayer().sendMessage("You broke a storage block!");
 
         ioModule.getStorages().remove(this);
+        ioModule.getTerminal().updateCounters();
 
     }
 
@@ -92,5 +95,7 @@ public class StorageBlock implements MachineBlock {
                 block.hasMetadata("$blockType") && block.getMetadata("$blockType").get(0).asString().equals(type().name());
     }
 
-
+    public void setIoModule(IOModuleBlock ioModule) {
+        this.ioModule = ioModule;
+    }
 }
