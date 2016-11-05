@@ -15,7 +15,7 @@ import org.devathon.contest2016.util.Reflection;
  */
 public enum BlockType {
 
-    STORAGE(null) {
+    STORAGE(StorageBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
             return itemInHand.getType() == Material.ENDER_CHEST && itemInHand != null

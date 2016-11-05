@@ -35,8 +35,6 @@ public class IOModuleBlock implements MachineBlock {
     public void load(Location location) {
         this.location = location;
         location.getBlock().setMetadata("$blockType", new FixedMetadataValue(DevathonPlugin.helper().plugin(), type().name()));
-
-
     }
 
     @Override
@@ -92,6 +90,10 @@ public class IOModuleBlock implements MachineBlock {
     @Override
     public TerminalBlock getTerminal() {
         return terminal;
+    }
+
+    public void setTerminal(TerminalBlock terminal) {
+        this.terminal = terminal;
     }
 
     @Override

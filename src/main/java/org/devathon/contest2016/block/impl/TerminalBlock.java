@@ -31,6 +31,8 @@ public class TerminalBlock implements MachineBlock {
         location.getBlock().setMetadata("$blockType", new FixedMetadataValue(DevathonPlugin.helper().plugin(), type().name()));
 
         collectors.forEach(c -> c.setTerminal(this));
+        ioModules.forEach(c -> c.setTerminal(this));
+
     }
 
     @Override
