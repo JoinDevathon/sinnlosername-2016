@@ -6,6 +6,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.devathon.contest2016.block.impl.TerminalBlock;
 
 import java.io.Serializable;
 
@@ -26,5 +27,7 @@ public interface MachineBlock extends Serializable {
     void place(BlockPlaceEvent e);
 
     void breakBlock(BlockBreakEvent e);
+
+    TerminalBlock getTerminal();
 
 }

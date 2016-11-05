@@ -5,6 +5,7 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.devathon.contest2016.DevathonPlugin;
 import org.devathon.contest2016.block.impl.EnergyCollectorBlock;
+import org.devathon.contest2016.block.impl.TerminalBlock;
 import org.devathon.contest2016.util.Reflection;
 
 /**
@@ -18,7 +19,7 @@ public enum BlockType {
             return false;
         }
     },
-    PIPE(null) {
+    IO_MODULE(null) {
         @Override
         public boolean is(ItemStack itemInHand) {
             return false;
@@ -32,10 +33,12 @@ public enum BlockType {
                     && itemInHand.getItemMeta().getDisplayName().equals(EnergyCollectorBlock.ITEM_NAME);
         }
     },
-    TERMINAL(null) {
+    TERMINAL(TerminalBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return false;
+            return itemInHand.getType() == Material.WORKBENCH && itemInHand != null
+                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
+                    && itemInHand.getItemMeta().getDisplayName().equals(TerminalBlock.ITEM_NAME);
         }
     };
 
@@ -50,6 +53,17 @@ public enum BlockType {
         final String type = block.getMetadata("$blockType").get(0).asString();
         return valueOf(type);
     }
+
+    public static BlockType of(ItemStack item) {
+        if (item == null) return null;
+
+        for (BlockType type : values())
+            if (type.is(item)) return type;
+
+        return null;
+    }
+
+
 
     public Object newInstance() {
         final Reflection reflection = DevathonPlugin.helper().reflection();
