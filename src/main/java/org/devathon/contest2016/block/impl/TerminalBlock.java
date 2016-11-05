@@ -21,6 +21,8 @@ public class TerminalBlock implements MachineBlock {
 
     public static final String ITEM_NAME = "§6§lTerminal";
     private final Set<EnergyCollectorBlock> collectors = new HashSet<>();
+    private final Set<IOModuleBlock> ioModules = new HashSet<>();
+
     private transient Location location;
 
     @Override
@@ -44,6 +46,8 @@ public class TerminalBlock implements MachineBlock {
 
         e.getPlayer().sendMessage("You interacted with a terminal");
         e.getPlayer().sendMessage("This terminal is connected with " + collectors.size() + " collectors");
+        e.getPlayer().sendMessage("This terminal is connected with " + ioModules.size() + " IOModules");
+
     }
 
     @Override
@@ -91,5 +95,9 @@ public class TerminalBlock implements MachineBlock {
 
     public Set<EnergyCollectorBlock> getCollectors() {
         return collectors;
+    }
+
+    public Set<IOModuleBlock> getIOModules() {
+        return ioModules;
     }
 }

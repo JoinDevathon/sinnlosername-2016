@@ -5,6 +5,8 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.devathon.contest2016.block.BlockManager;
 import org.devathon.contest2016.block.impl.EnergyCollectorBlock;
+import org.devathon.contest2016.block.impl.IOModuleBlock;
+import org.devathon.contest2016.block.impl.StorageBlock;
 import org.devathon.contest2016.block.impl.TerminalBlock;
 import org.devathon.contest2016.builder.Builder;
 import org.devathon.contest2016.builder.impl.ItemBuilder;
@@ -38,6 +40,18 @@ public class DevathonPlugin extends JavaPlugin {
                 new ShapedRecipe(Builder.of(ItemBuilder.class).item(Material.WORKBENCH).name(TerminalBlock.ITEM_NAME).build())
                         .shape("ABA", "ABA", "ABB").setIngredient('A', Material.ANVIL).setIngredient('B', Material.APPLE)
         );
+
+        helper.addRecipe(
+                new ShapedRecipe(Builder.of(ItemBuilder.class).item(Material.JUKEBOX).name(IOModuleBlock.ITEM_NAME).lore("§aFrequency:§7 0").build())
+                        .shape("ABA", "ABA", "BBB").setIngredient('A', Material.ANVIL).setIngredient('B', Material.APPLE)
+        );
+
+        helper.addRecipe(
+                new ShapedRecipe(Builder.of(ItemBuilder.class).item(Material.ENDER_CHEST).name(StorageBlock.ITEM_NAME).build())
+                        .shape("ABA", "ABA", "BAB").setIngredient('A', Material.ANVIL).setIngredient('B', Material.APPLE)
+        );
+
+
 
 
 

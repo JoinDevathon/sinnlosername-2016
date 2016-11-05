@@ -13,27 +13,37 @@ import org.devathon.contest2016.block.BlockType;
 import org.devathon.contest2016.block.MachineBlock;
 import org.devathon.contest2016.block.SerializeableLocation;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Florian on 05.11.16 in org.devathon.contest2016.block.impl
  */
 public class IOModuleBlock implements MachineBlock {
 
-    private short frequency;
+    public static final String ITEM_NAME = "§6§lIO Module";
+
+    private short frequency = -1;
+    private Set<StorageBlock> storages = new HashSet<>();
 
     private transient TerminalBlock terminal;
     private transient Location location;
+
 
     @Override
     public void load(Location location) {
         this.location = location;
         location.getBlock().setMetadata("$blockType", new FixedMetadataValue(DevathonPlugin.helper().plugin(), type().name()));
 
+
     }
 
     @Override
     public void interact(PlayerInteractEvent e) {
+        if (!e.getPlayer().isSneaking()) e.setCancelled(true);
+
+        e.getPlayer().sendMessage("i with IOModule");
 
     }
 
@@ -41,6 +51,8 @@ public class IOModuleBlock implements MachineBlock {
     public void place(BlockPlaceEvent e) {
 
         boolean found = false;
+
+        frequency = Short.parseShort(e.getItemInHand().getItemMeta().getLore().get(0).substring(15).trim());
 
         for (Map.Entry<SerializeableLocation, MachineBlock> entry : BlockManager.getInstance().getBlocks().entrySet()) {
 
@@ -66,13 +78,15 @@ public class IOModuleBlock implements MachineBlock {
             terminal = against.getTerminal();
         }
 
+        terminal.getIOModules().add(this);
         e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "Successfully connected!");
 
     }
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
-
+        e.getPlayer().sendMessage("br IOModule");
+        terminal.getIOModules().remove(this);
     }
 
     @Override
@@ -96,4 +110,7 @@ public class IOModuleBlock implements MachineBlock {
                 block.hasMetadata("$blockType") && block.getMetadata("$blockType").get(0).asString().equals(type().name());
     }
 
+    public Set<StorageBlock> getStorages() {
+        return storages;
+    }
 }

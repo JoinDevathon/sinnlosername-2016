@@ -5,6 +5,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.devathon.contest2016.builder.Builder;
 
+import java.util.Arrays;
+
 /**
  * Created by Florian on 05.11.16 in org.devathon.contest2016.builder.impl
  */
@@ -36,6 +38,10 @@ public class ItemBuilder implements Builder<ItemStack> {
         return this;
     }
 
+    public ItemBuilder lore(String... lore) {
+        meta.setLore(Arrays.asList(lore));
+        return this;
+    }
 
     @Override
     public ItemStack build() {

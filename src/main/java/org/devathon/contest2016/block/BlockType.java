@@ -5,6 +5,8 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.devathon.contest2016.DevathonPlugin;
 import org.devathon.contest2016.block.impl.EnergyCollectorBlock;
+import org.devathon.contest2016.block.impl.IOModuleBlock;
+import org.devathon.contest2016.block.impl.StorageBlock;
 import org.devathon.contest2016.block.impl.TerminalBlock;
 import org.devathon.contest2016.util.Reflection;
 
@@ -16,13 +18,17 @@ public enum BlockType {
     STORAGE(null) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return false;
+            return itemInHand.getType() == Material.ENDER_CHEST && itemInHand != null
+                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
+                    && itemInHand.getItemMeta().getDisplayName().equals(StorageBlock.ITEM_NAME);
         }
     },
-    IO_MODULE(null) {
+    IO_MODULE(IOModuleBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return false;
+            return itemInHand.getType() == Material.JUKEBOX && itemInHand != null
+                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
+                    && itemInHand.getItemMeta().getDisplayName().equals(IOModuleBlock.ITEM_NAME);
         }
     },
     ENERGIE_COLLECTOR(EnergyCollectorBlock.class) {
