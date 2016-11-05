@@ -11,6 +11,7 @@ import org.devathon.contest2016.block.impl.TerminalBlock;
 import org.devathon.contest2016.builder.Builder;
 import org.devathon.contest2016.builder.impl.ItemBuilder;
 import org.devathon.contest2016.listener.GeneralListener;
+import org.devathon.contest2016.listener.InventoryListener;
 import org.devathon.contest2016.util.Helper;
 
 public class DevathonPlugin extends JavaPlugin {
@@ -30,6 +31,7 @@ public class DevathonPlugin extends JavaPlugin {
 
 
         helper.registerListener(new GeneralListener());
+        helper.registerListener(new InventoryListener());
 
         helper.addRecipe(
                 new ShapedRecipe(Builder.of(ItemBuilder.class).item(Material.SEA_LANTERN).name(EnergyCollectorBlock.ITEM_NAME).build())

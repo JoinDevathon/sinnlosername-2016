@@ -1,6 +1,7 @@
 package org.devathon.contest2016.block.impl;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -10,6 +11,10 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.devathon.contest2016.DevathonPlugin;
 import org.devathon.contest2016.block.BlockType;
 import org.devathon.contest2016.block.MachineBlock;
+import org.devathon.contest2016.builder.Builder;
+import org.devathon.contest2016.builder.impl.ItemBuilder;
+import org.devathon.contest2016.inventory.ClickAction;
+import org.devathon.contest2016.inventory.InventoryMenu;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +28,9 @@ public class TerminalBlock implements MachineBlock {
     private final Set<EnergyCollectorBlock> collectors = new HashSet<>();
     private final Set<IOModuleBlock> ioModules = new HashSet<>();
 
+    private final long energy = 0;
+
+    private final transient InventoryMenu menu = new InventoryMenu(45, "§6§lTerminal");
     private transient Location location;
 
     @Override
@@ -32,6 +40,34 @@ public class TerminalBlock implements MachineBlock {
 
         collectors.forEach(c -> c.setTerminal(this));
         ioModules.forEach(c -> c.setTerminal(this));
+
+        /*
+        0 1 2  3 4 5  6 7 8
+
+         */
+
+        updateCounters();
+
+
+    }
+
+    private void updateCounters() {
+
+        // ioModule count
+        menu.set(Builder.of(ItemBuilder.class)
+                .item(Material.JUKEBOX, ioModules.size()).name(IOModuleBlock.ITEM_NAME).build(), 3, ClickAction.CANCEL);
+
+        // collector count
+        menu.set(Builder.of(ItemBuilder.class)
+                .item(Material.SEA_LANTERN, collectors.size()).name(EnergyCollectorBlock.ITEM_NAME).build(), 4, ClickAction.CANCEL);
+
+        // storage count
+        int i = 0;
+        for (IOModuleBlock ioModule : ioModules)
+            i += ioModule.getStorages().size();
+
+        menu.set(Builder.of(ItemBuilder.class)
+                .item(Material.ENDER_CHEST, i).name(StorageBlock.ITEM_NAME).build(), 5, ClickAction.CANCEL);
 
     }
 
@@ -43,8 +79,18 @@ public class TerminalBlock implements MachineBlock {
 
     @Override
     public void interact(PlayerInteractEvent e) {
-        if (!e.getPlayer().isSneaking())
+        if (!e.getPlayer().isSneaking()) {
             e.setCancelled(true);
+
+            menu.open(e.getPlayer());
+
+
+        }
+
+
+
+
+
 
         e.getPlayer().sendMessage("You interacted with a terminal");
         e.getPlayer().sendMessage("This terminal is connected with " + collectors.size() + " collectors");

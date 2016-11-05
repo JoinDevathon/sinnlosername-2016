@@ -24,9 +24,7 @@ public class InventoryListener implements Listener {
             final ClickAction action = menu.getAction(e.getSlot());
 
             action.click(e);
-
         }
-
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

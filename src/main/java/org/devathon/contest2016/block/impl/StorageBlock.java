@@ -46,7 +46,7 @@ public class StorageBlock implements MachineBlock {
         if (type == null || type != BlockType.IO_MODULE) {
 
             BlockManager.getInstance().remove(e.getBlock().getLocation());
-            e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§cYou can only place a storage block against a IOModule!");
+            e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§cYou can only place a storage block against an IOModule!");
             e.setCancelled(true);
 
             return;

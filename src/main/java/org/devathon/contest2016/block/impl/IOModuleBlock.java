@@ -79,6 +79,8 @@ public class IOModuleBlock implements MachineBlock {
         terminal.getIOModules().add(this);
         e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "Successfully connected!");
 
+        load(e.getBlock().getLocation());
+
     }
 
     @Override

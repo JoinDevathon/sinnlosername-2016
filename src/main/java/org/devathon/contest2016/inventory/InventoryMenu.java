@@ -19,11 +19,11 @@ public class InventoryMenu implements Closeable {
     private static final List<InventoryMenu> menus = new ArrayList<>();
 
     private final Inventory inventory;
-    private final List<InventoryItem> items;
+    private final InventoryItem[] items;
     private final List<Player> viewers = new ArrayList<>();
 
     public InventoryMenu(int size, String name) {
-        this.items = new ArrayList<>(size);
+        items = new InventoryItem[size];
         inventory = Bukkit.createInventory(null, size, name);
         menus.add(this);
     }
@@ -37,11 +37,15 @@ public class InventoryMenu implements Closeable {
         player.openInventory(inventory);
     }
 
+    public void set(ItemStack item, int slot, ClickAction action) {
+        items[slot] = new InventoryItem(item, action);
+    }
+
     public void update() {
 
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < items.length; i++) {
 
-            final InventoryItem item = items.get(i);
+            final InventoryItem item = items[i];
             if (item == null) {
                 if (inventory.getItem(i) != null)
                     inventory.setItem(i, new ItemStack(Material.AIR));
@@ -56,7 +60,9 @@ public class InventoryMenu implements Closeable {
     }
 
     public ClickAction getAction(int i) {
-        return items.get(i).getAction();
+        final InventoryItem item = items[i];
+        return item == null ? null : item.getAction();
+        s
     }
 
     @Override
