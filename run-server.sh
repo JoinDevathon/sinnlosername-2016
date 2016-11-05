@@ -47,7 +47,7 @@ while true; do
     if [ -f "build/apache-maven-3.2.5" ]; then
     	./build/apache-maven-3.2.5/bin/mvn clean install # use the maven that spigot build tools downloaded
     else
-        mvn clean install
+        mvn -T 2C clean install
     fi
     cp target/DevathonProject-1.0-SNAPSHOT.jar server/plugins/DevathonProject-1.0-SNAPSHOT.jar
     cd server
