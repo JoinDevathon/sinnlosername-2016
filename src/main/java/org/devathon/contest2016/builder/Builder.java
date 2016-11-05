@@ -12,9 +12,8 @@ public interface Builder<T> {
     static <T extends Builder> T of(Class<T> c) {
 
         final Constructor<T> constructor = (Constructor<T>) DevathonPlugin.helper().reflection().getConstructor(c);
-        final T instance = (T) DevathonPlugin.helper().reflection().newInstance(constructor);
 
-        return instance;
+        return (T) DevathonPlugin.helper().reflection().newInstance(constructor);
 
     }
 
