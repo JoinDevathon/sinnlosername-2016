@@ -40,7 +40,7 @@ public class BlockManager implements Serializable {
         } else
             instance = new BlockManager();
 
-        getInstance().getBlocks().forEach((l, mb) -> mb.load());
+        getInstance().getBlocks().forEach((l, mb) -> mb.load(l.toLocation()));
 
     }
 
@@ -75,12 +75,14 @@ public class BlockManager implements Serializable {
         return blocks;
     }
 
-    public void addBlock(Location location, MachineBlock block) {
+    public MachineBlock addBlock(Location location, MachineBlock block) {
         blocks.put(new SerializeableLocation(location), block);
+        return block;
     }
 
     public void remove(Location location) {
         blocks.remove(new SerializeableLocation(location));
     }
+
 
 }
