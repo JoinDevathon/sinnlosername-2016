@@ -38,8 +38,9 @@ public class GeneralListener implements Listener {
 
         if (block == null) return;
 
-        BlockManager.getInstance().remove(e.getBlock().getLocation());
         block.breakBlock(e);
+        if (!e.isCancelled()) BlockManager.getInstance().remove(e.getBlock().getLocation());
+
 
     }
 

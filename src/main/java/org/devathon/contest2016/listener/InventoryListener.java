@@ -16,18 +16,12 @@ public class InventoryListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(InventoryClickEvent e) {
 
-        e.getWhoClicked().sendMessage("trigger");
-
         if (e.getClickedInventory() == null || e.getClickedInventory().getName() == null) {
-            e.getWhoClicked().sendMessage("fuck");
             if (e.getInventory() != null && e.getInventory().getName() != null && e.getInventory().getName().equals("§6§lTerminal"))
                 e.setCancelled(true);
             return;
+
         }
-
-        e.getWhoClicked().sendMessage(e.getClickedInventory().getName());
-        e.getWhoClicked().sendMessage(e.getInventory().getName());
-
 
         for (InventoryMenu menu : InventoryMenu.getMenus()) {
             if (!menu.getName().equals(e.getClickedInventory().getName()) && menu.getName().equals(e.getInventory().getName())) {

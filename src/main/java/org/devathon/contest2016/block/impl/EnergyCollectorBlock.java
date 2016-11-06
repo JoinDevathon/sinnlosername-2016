@@ -101,6 +101,7 @@ public class EnergyCollectorBlock implements MachineBlock {
 
         e.getBlock().getWorld().dropItemNaturally(loc, Builder.of(ItemBuilder.class).item(Material.SEA_LANTERN).name(ITEM_NAME).build());
 
+
     }
 
     @Override
@@ -126,6 +127,10 @@ public class EnergyCollectorBlock implements MachineBlock {
     public boolean is(Block block) {
         return block.getLocation().equals(location) &&
                 block.hasMetadata("$blockType") && block.getMetadata("$blockType").get(0).asString().equals(type().name());
+    }
+
+    public Block getBlock() {
+        return location.getBlock();
     }
 
     public int getPower() {

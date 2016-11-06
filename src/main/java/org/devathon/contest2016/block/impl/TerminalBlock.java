@@ -1,14 +1,15 @@
 package org.devathon.contest2016.block.impl;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitTask;
 import org.devathon.contest2016.DevathonPlugin;
@@ -19,11 +20,9 @@ import org.devathon.contest2016.builder.impl.ItemBuilder;
 import org.devathon.contest2016.builder.impl.ThreadBuilder;
 import org.devathon.contest2016.inventory.ClickAction;
 import org.devathon.contest2016.inventory.InventoryMenu;
+import org.devathon.contest2016.util.Pair;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Florian on 05.11.16 in org.devathon.contest2016.block.impl
@@ -35,7 +34,9 @@ public class TerminalBlock implements MachineBlock {
     private final Set<IOModuleBlock> ioModules = new HashSet<>();
 
     private int energy = 0;
+    private List<Pair<Map<String, Object>, Map<String, Object>>> serializedItems;
 
+    private transient int scroll;
     private transient boolean changedItems;
     private transient List<ItemStack> items;
     private transient BukkitTask task;
@@ -50,8 +51,24 @@ public class TerminalBlock implements MachineBlock {
         this.location = location;
         this.items = new ArrayList<>();
         this.lastEnergy = -1;
-        this.changedItems = false;
+        this.changedItems = true;
+        this.scroll = 0;
+        if (this.serializedItems == null) this.serializedItems = new ArrayList<>();
 
+        for (Pair<Map<String, Object>, Map<String, Object>> pair : serializedItems) {
+            final ItemStack stack = ItemStack.deserialize(pair.getKey());
+
+            if (pair.getValue() != null) {
+                final ItemMeta meta =
+                        (ItemMeta) ConfigurationSerialization.deserializeObject(
+                                pair.getValue(), ConfigurationSerialization.getClassByAlias("ItemMeta"));
+                stack.setItemMeta(meta);
+            }
+
+            items.add(stack);
+        }
+
+        serializedItems.clear();
 
         location.getBlock().setMetadata("$blockType", new FixedMetadataValue(DevathonPlugin.helper().plugin(), type().name()));
 
@@ -66,10 +83,14 @@ public class TerminalBlock implements MachineBlock {
         menu.setSame(greyGlass, ClickAction.CANCEL, 0, 1, 2, 6, 7, 8);
 
         setupDefaultAction();
+        setScrollItems();
         updateCounters();
         updateEnergy();
         startThread();
 
+        // for (int i = 0; i < 50; i++) {
+        // insertItem(new ItemStack(Material.getMaterial(ThreadLocalRandom.current().nextInt(20, 30)), 64));
+        // }
 
     }
 
@@ -77,8 +98,6 @@ public class TerminalBlock implements MachineBlock {
         if (stack == null) return;
 
         if (alreadyIn(stack)) {
-
-            Bukkit.broadcastMessage("Already in: " + items.size());
 
             for (ItemStack item : items) {
 
@@ -99,16 +118,37 @@ public class TerminalBlock implements MachineBlock {
             if (stack.getAmount() > 0)
                 items.add(stack);
 
-        } else {
+        } else
             items.add(stack);
-            Bukkit.broadcastMessage("Not in, adding. " + items.size());
-        }
+
 
         changedItems = true;
 
     }
 
+    public boolean wouldBeFull(int i) {
+        return (totalItemCount() + i) > maxStorage();
+    }
+
+    public int maxStorage() {
+        int storages = 0;
+        for (IOModuleBlock ioModule : ioModules)
+            storages += ioModule.getStorages().size();
+
+        return storages * 18 * 64;
+    }
+
+    public int totalItemCount() {
+        int i = 0;
+        for (ItemStack item : items) {
+            if (item == null) continue;
+            i += item.getAmount();
+        }
+        return i;
+    }
+
     public void removeItem(ItemStack stack, int slot) {
+        if (slot >= items.size()) return; // This should not happen, but because of shitty inventory bugs it does. -_-
         final ItemStack item = items.get(slot);
 
         if (item.getAmount() == stack.getAmount())
@@ -141,6 +181,14 @@ public class TerminalBlock implements MachineBlock {
     @Override
     public void serialize() {
 
+        //noinspection Convert2streamapi
+
+        for (ItemStack item : items) {
+            final Map<String, Object> sItem = item.serialize();
+            sItem.remove("meta");
+            serializedItems.add(new Pair<>(sItem, item.hasItemMeta() ? item.getItemMeta().serialize() : null));
+        }
+
     }
 
     public void setupDefaultAction() {
@@ -152,7 +200,6 @@ public class TerminalBlock implements MachineBlock {
 
         menu.setDefaultAction(e -> {
 
-            e.getWhoClicked().sendMessage("T R I G G E R E D");
 
             if (e.getCursor() == null || e.getCursor().getType() == Material.AIR) {
                 if (e.getCurrentItem() == null) {
@@ -179,9 +226,6 @@ public class TerminalBlock implements MachineBlock {
 
                 removeItem(toRemove, DevathonPlugin.helper().redirecter().reverseRedirect(e.getSlot()) - 1);
 
-                e.getWhoClicked().sendMessage("Took: " + e.getCurrentItem().getType() + ":" + e.getCurrentItem().getAmount());
-                e.getWhoClicked().sendMessage("action: " + action.name());
-
                 return;
             }
 
@@ -189,7 +233,12 @@ public class TerminalBlock implements MachineBlock {
 
             if (e.isRightClick() || e.isShiftClick()) return;
 
-            e.getWhoClicked().sendMessage("Inserting " + e.getCursor().getType());
+            if (wouldBeFull(e.getCursor().getAmount())) {
+                e.getWhoClicked().sendMessage(DevathonPlugin.PREFIX + "§cNot enough space for this itemstack!");
+                e.getWhoClicked().sendMessage(DevathonPlugin.PREFIX + "§cAdd more storage blocks to get more storage!");
+                return;
+            }
+
             insertItem(e.getCursor());
             e.setCursor(new ItemStack(Material.AIR));
 
@@ -219,6 +268,16 @@ public class TerminalBlock implements MachineBlock {
             if (energy != lastEnergy) updateEnergy();
             lastEnergy = energy;
 
+            if (energy < 1)
+                menu.getViewers().forEach(player -> {
+                    player.closeInventory();
+                    player.sendMessage(DevathonPlugin.PREFIX + "§cTerminal is out of energy.");
+                });
+            else
+                updateCounters();
+
+
+            setScrollItems();
 
             if (!changedItems) {
                 menu.update();
@@ -227,21 +286,57 @@ public class TerminalBlock implements MachineBlock {
 
             changedItems = false;
 
-            int i = 0;
-            while (i < items.size() && i < 29) {
-                final ItemStack stack = items.get(i);
+            int itemCursor = scroll * 7;
+            int invCursor = 0;
+            while (itemCursor < items.size() && invCursor < 28) {
+                final ItemStack stack = items.get(itemCursor);
 
-                menu.set(stack, DevathonPlugin.helper().redirecter().redirect(i + 1), menu.getDefaultAction());
+                menu.set(stack, DevathonPlugin.helper().redirecter().redirect(invCursor + 1), menu.getDefaultAction());
 
-                i++;
+                itemCursor++;
+                invCursor++;
             }
 
-            while (++i < 29)
-                menu.remove(DevathonPlugin.helper().redirecter().redirect(i));
+            while (invCursor < 28) {
+                invCursor++;
+                menu.remove(DevathonPlugin.helper().redirecter().redirect(invCursor));
+            }
 
             menu.update();
 
         }).start(false, 20).build();
+
+    }
+
+    public void setScrollItems() {
+        final ItemStack cantScroll =
+                Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 3).name("§cCan't scroll anymore").build();
+
+        final int maxDown = items.size() / 7;
+
+        if (scroll + 1 > maxDown)
+            menu.set(cantScroll, 7, ClickAction.CANCEL);
+        else
+            menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 3).name("§9Scroll down").build(), 7, e -> {
+                e.setCancelled(true);
+                if (scroll + 1 <= maxDown) {
+                    scroll += 1;
+                    setScrollItems();
+                    changedItems = true;
+                }
+            });
+
+        if (scroll - 1 < 0)
+            menu.set(cantScroll, 6, ClickAction.CANCEL);
+        else
+            menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 3).name("§9Scroll up").build(), 6, e -> {
+                e.setCancelled(true);
+                if (scroll - 1 >= 0) {
+                    scroll -= 1;
+                    setScrollItems();
+                    changedItems = true;
+                }
+            });
 
     }
 
@@ -252,19 +347,24 @@ public class TerminalBlock implements MachineBlock {
                 .item(Material.JUKEBOX, ioModules.size()).name(IOModuleBlock.ITEM_NAME)
                 .lore("§aConntected: §7" + ioModules.size()).build(), 3, ClickAction.CANCEL);
 
+        // energy count
+        int energy = 0;
+        for (EnergyCollectorBlock c : collectors)
+            energy += Math.pow(20, c.getPower());
+
         // collector count
         menu.set(Builder.of(ItemBuilder.class)
                 .item(Material.SEA_LANTERN, collectors.size()).name(EnergyCollectorBlock.ITEM_NAME)
-                .lore("§aConntected: §7" + collectors.size()).build(), 4, ClickAction.CANCEL);
+                .lore("§aConntected: §7" + collectors.size(), "§aEnergy/s: §7" + energy).build(), 4, ClickAction.CANCEL);
 
         // storage count
-        int i = 0;
+        int cCount = 0;
         for (IOModuleBlock ioModule : ioModules)
-            i += ioModule.getStorages().size();
+            cCount += ioModule.getStorages().size();
 
         menu.set(Builder.of(ItemBuilder.class)
-                .item(Material.ENDER_CHEST, i).name(StorageBlock.ITEM_NAME)
-                .lore("§aConntected: §7" + i).build(), 5, ClickAction.CANCEL);
+                .item(Material.ENDER_CHEST, cCount).name(StorageBlock.ITEM_NAME)
+                .lore("§aConntected: §7" + cCount, "§aMaxStorage: §7" + maxStorage()).build(), 5, ClickAction.CANCEL);
 
         menu.update();
     }
@@ -318,7 +418,7 @@ public class TerminalBlock implements MachineBlock {
     @Override
     public void place(BlockPlaceEvent e) {
         load(e.getBlock().getLocation());
-        e.getPlayer().sendMessage("You placed a terminal");
+        e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§aSuccessfully placed terminal!");
     }
 
     @Override
@@ -326,20 +426,42 @@ public class TerminalBlock implements MachineBlock {
         if (!e.getPlayer().isSneaking()) {
             e.setCancelled(true);
 
+            if (energy < 1) {
+                e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§cNot enough energy to open terminal!");
+                e.getPlayer().sendMessage(DevathonPlugin.PREFIX +
+                        "§cConnect more energy collectors or improve already connected energy collectors to open the terminal.");
+                return;
+            }
+
             menu.open(e.getPlayer());
-
         }
-
-        e.getPlayer().sendMessage("You interacted with a terminal");
-        e.getPlayer().sendMessage("This terminal is connected with " + collectors.size() + " collectors");
-        e.getPlayer().sendMessage("This terminal is connected with " + ioModules.size() + " IOModules");
 
     }
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
         if (task != null) task.cancel();
-        e.getPlayer().sendMessage("You broke a terminal");
+
+        if (totalItemCount() > 0) {
+            e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§cYou can't break this terminal because it isn't empty!");
+            e.setCancelled(true);
+            return;
+        }
+
+        final Location l = e.getBlock().getLocation().clone();
+
+        DevathonPlugin.helper().mid(l);
+
+        e.setCancelled(true);
+        e.getBlock().setType(Material.AIR);
+
+        e.getBlock().getWorld().dropItemNaturally(l,
+                Builder.of(ItemBuilder.class).item(Material.WORKBENCH).name(TerminalBlock.ITEM_NAME).build());
+
+        ioModules.forEach(m -> m.breakBlock(new BlockBreakEvent(m.getBlock(), e.getPlayer())));
+        ((Set<EnergyCollectorBlock>) ((HashSet<EnergyCollectorBlock>) collectors).clone())
+                .forEach(c -> c.breakBlock(new BlockBreakEvent(c.getBlock(), e.getPlayer())));
+
     }
 
     @Override
@@ -386,4 +508,6 @@ public class TerminalBlock implements MachineBlock {
     public Set<IOModuleBlock> getIOModules() {
         return ioModules;
     }
+
+
 }

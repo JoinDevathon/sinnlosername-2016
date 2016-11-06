@@ -1,6 +1,7 @@
 package org.devathon.contest2016.block.impl;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -12,6 +13,8 @@ import org.devathon.contest2016.block.BlockManager;
 import org.devathon.contest2016.block.BlockType;
 import org.devathon.contest2016.block.MachineBlock;
 import org.devathon.contest2016.block.SerializeableLocation;
+import org.devathon.contest2016.builder.Builder;
+import org.devathon.contest2016.builder.impl.ItemBuilder;
 
 /**
  * Created by Florian on 05.11.16 in org.devathon.contest2016.block.impl
@@ -33,9 +36,6 @@ public class StorageBlock implements MachineBlock {
     @Override
     public void interact(PlayerInteractEvent e) {
         e.setCancelled(!e.getPlayer().isSneaking());
-
-        e.getPlayer().sendMessage("omfg you interacted with an storage block! gg");
-
     }
 
     @Override
@@ -58,19 +58,26 @@ public class StorageBlock implements MachineBlock {
                 .get(new SerializeableLocation(e.getBlockAgainst().getLocation()));
 
         ioModule.getStorages().add(this);
-
         ioModule.getTerminal().updateCounters();
 
-        e.getPlayer().sendMessage("You placed a storage block!");
+        e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "Successfully connected!");
 
     }
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
-        e.getPlayer().sendMessage("You broke a storage block!");
 
         ioModule.getStorages().remove(this);
         ioModule.getTerminal().updateCounters();
+
+        final Location l = e.getBlock().getLocation().clone();
+        DevathonPlugin.helper().mid(l);
+
+        e.setCancelled(true);
+        e.getBlock().setType(Material.AIR);
+
+        e.getBlock().getWorld().dropItemNaturally(l,
+                Builder.of(ItemBuilder.class).item(Material.ENDER_CHEST).name(StorageBlock.ITEM_NAME).build());
 
     }
 
@@ -97,5 +104,9 @@ public class StorageBlock implements MachineBlock {
 
     public void setIoModule(IOModuleBlock ioModule) {
         this.ioModule = ioModule;
+    }
+
+    public Block getBlock() {
+        return location.getBlock();
     }
 }

@@ -56,6 +56,8 @@ public class BlockManager implements Serializable {
             if (!dataFile.exists())
                 dataFile.createNewFile();
 
+            getInstance().getBlocks().forEach((l, mb) -> mb.serialize());
+
             final FileOutputStream fileOut = new FileOutputStream(dataFile);
             final ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
 

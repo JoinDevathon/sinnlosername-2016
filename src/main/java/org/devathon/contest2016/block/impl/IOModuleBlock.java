@@ -1,6 +1,7 @@
 package org.devathon.contest2016.block.impl;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -12,6 +13,8 @@ import org.devathon.contest2016.block.BlockManager;
 import org.devathon.contest2016.block.BlockType;
 import org.devathon.contest2016.block.MachineBlock;
 import org.devathon.contest2016.block.SerializeableLocation;
+import org.devathon.contest2016.builder.Builder;
+import org.devathon.contest2016.builder.impl.ItemBuilder;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -42,9 +45,6 @@ public class IOModuleBlock implements MachineBlock {
     @Override
     public void interact(PlayerInteractEvent e) {
         if (!e.getPlayer().isSneaking()) e.setCancelled(true);
-
-        e.getPlayer().sendMessage("i with IOModule");
-
     }
 
     @Override
@@ -89,9 +89,22 @@ public class IOModuleBlock implements MachineBlock {
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
-        e.getPlayer().sendMessage("br IOModule");
         terminal.getIOModules().remove(this);
         terminal.updateCounters();
+
+        final Location l = e.getBlock().getLocation().clone();
+        DevathonPlugin.helper().mid(l);
+
+        e.setCancelled(true);
+        e.getBlock().setType(Material.AIR);
+
+        e.getBlock().getWorld().dropItemNaturally(l,
+                Builder.of(ItemBuilder.class).item(Material.JUKEBOX).name(IOModuleBlock.ITEM_NAME).lore("§aFrequency:§7 " + frequency).build());
+
+        storages.forEach(s -> s.breakBlock(new BlockBreakEvent(s.getBlock(), e.getPlayer())));
+
+
+
     }
 
     @Override
@@ -117,6 +130,10 @@ public class IOModuleBlock implements MachineBlock {
     public boolean is(Block block) {
         return block.getLocation().equals(location) &&
                 block.hasMetadata("$blockType") && block.getMetadata("$blockType").get(0).asString().equals(type().name());
+    }
+
+    public Block getBlock() {
+        return location.getBlock();
     }
 
     public Set<StorageBlock> getStorages() {
