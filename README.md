@@ -15,8 +15,8 @@ GDG
 
 SGS
 
-S = Sea Lantern
-G = Gold Block
+S = Sea Lantern,
+G = Gold Block,
 D = Diamond
 
 ***********************
@@ -29,9 +29,9 @@ OSO
 
 SDS
 
-D = Diamond
-O = Obsidian
-G = Gold Ingot
+D = Diamond,
+O = Obsidian,
+G = Gold Ingot,
 S = Redstone Block
 
 ***********************
@@ -44,8 +44,8 @@ DGD
 
 RRR
 
-R = Redstone Block
-G = Glass
+R = Redstone Block,
+G = Glass,
 D = Diamond
 
 ***********************
@@ -58,8 +58,8 @@ RER
 
 GRG
 
-G = Gold Ingot
-R = Redstone
+G = Gold Ingot,
+R = Redstone,
 E = Enderchest
 
 ***********************
@@ -72,8 +72,8 @@ DOD
 
 RDR
 
-R = Redstone Block
-D = Diamond
+R = Redstone Block,
+D = Diamond,
 O = Obsidian
 
 ***********************
