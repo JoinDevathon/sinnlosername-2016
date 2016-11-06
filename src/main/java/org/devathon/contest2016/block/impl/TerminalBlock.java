@@ -1,10 +1,12 @@
 package org.devathon.contest2016.block.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -34,16 +36,23 @@ public class TerminalBlock implements MachineBlock {
 
     private int energy = 0;
 
-    private transient boolean changedItems = false;
-    private transient List<ItemStack> items = new ArrayList<>();
+    private transient boolean changedItems;
+    private transient List<ItemStack> items;
     private transient BukkitTask task;
-    private transient int lastEnergy = -1;
+    private transient int lastEnergy;
     private transient InventoryMenu menu;
     private transient Location location;
 
     @Override
     public void load(Location location) {
+
+        //transient items doesn't initialize, don't ask me why.
         this.location = location;
+        this.items = new ArrayList<>();
+        this.lastEnergy = -1;
+        this.changedItems = false;
+
+
         location.getBlock().setMetadata("$blockType", new FixedMetadataValue(DevathonPlugin.helper().plugin(), type().name()));
 
         collectors.forEach(c -> c.setTerminal(this));
@@ -66,7 +75,10 @@ public class TerminalBlock implements MachineBlock {
 
     public void insertItem(ItemStack stack) {
         if (stack == null) return;
+
         if (alreadyIn(stack)) {
+
+            Bukkit.broadcastMessage("Already in: " + items.size());
 
             for (ItemStack item : items) {
 
@@ -87,15 +99,31 @@ public class TerminalBlock implements MachineBlock {
             if (stack.getAmount() > 0)
                 items.add(stack);
 
-        } else
+        } else {
             items.add(stack);
+            Bukkit.broadcastMessage("Not in, adding. " + items.size());
+        }
 
         changedItems = true;
 
     }
 
+    public void removeItem(ItemStack stack, int slot) {
+        final ItemStack item = items.get(slot);
+
+        if (item.getAmount() == stack.getAmount())
+            items.remove(slot);
+        else
+            item.setAmount(item.getAmount() - stack.getAmount());
+
+        changedItems = true;
+    }
+
+
     public boolean alreadyIn(ItemStack stack) {
         if (stack == null) throw new NullPointerException("Stack is null, dafuq?");
+        if (items == null) throw new NullPointerException("Items is null, dafuq?");
+
         for (ItemStack item : items)
             if (item != null && equalsNoAmount(item, stack))
                 return true;
@@ -116,12 +144,55 @@ public class TerminalBlock implements MachineBlock {
     }
 
     public void setupDefaultAction() {
+
+        menu.setClickOtherAction(e -> {
+            if (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY)
+                e.setCancelled(true);
+        });
+
         menu.setDefaultAction(e -> {
 
-            if (e.getCursor() == null || e.getCursor().getType() == Material.AIR) return;
+            e.getWhoClicked().sendMessage("T R I G G E R E D");
 
+            if (e.getCursor() == null || e.getCursor().getType() == Material.AIR) {
+                if (e.getCurrentItem() == null) {
+                    e.setCancelled(true);
+                    return;
+                }
+
+                final InventoryAction action = e.getAction();
+
+                ItemStack toRemove;
+                switch (action) {
+                    case MOVE_TO_OTHER_INVENTORY:
+                    case PICKUP_ALL:
+                        toRemove = e.getCurrentItem();
+                        break;
+                    case PICKUP_HALF:
+                        toRemove = e.getCurrentItem().clone();
+                        toRemove.setAmount((toRemove.getAmount() / 2) + 1);
+                        break;
+                    default:
+                        e.setCancelled(true);
+                        return;
+                }
+
+                removeItem(toRemove, DevathonPlugin.helper().redirecter().reverseRedirect(e.getSlot()) - 1);
+
+                e.getWhoClicked().sendMessage("Took: " + e.getCurrentItem().getType() + ":" + e.getCurrentItem().getAmount());
+                e.getWhoClicked().sendMessage("action: " + action.name());
+
+                return;
+            }
+
+            e.setCancelled(true);
+
+            if (e.isRightClick() || e.isShiftClick()) return;
+
+            e.getWhoClicked().sendMessage("Inserting " + e.getCursor().getType());
             insertItem(e.getCursor());
             e.setCursor(new ItemStack(Material.AIR));
+
 
         });
     }
@@ -165,7 +236,7 @@ public class TerminalBlock implements MachineBlock {
                 i++;
             }
 
-            while (i++ < 29)
+            while (++i < 29)
                 menu.remove(DevathonPlugin.helper().redirecter().redirect(i));
 
             menu.update();

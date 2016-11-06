@@ -22,6 +22,8 @@ public class InventoryMenu implements Closeable {
     private final InventoryItem[] items;
     private final List<Player> viewers = new ArrayList<>();
     private ClickAction defaultAction = ClickAction.NOTHING;
+    private ClickAction clickOtherAction = ClickAction.NOTHING;
+
 
     public InventoryMenu(int size, String name) {
         items = new InventoryItem[size];
@@ -93,6 +95,14 @@ public class InventoryMenu implements Closeable {
 
     public String getName() {
         return inventory.getName();
+    }
+
+    public ClickAction getClickOtherAction() {
+        return clickOtherAction;
+    }
+
+    public void setClickOtherAction(ClickAction clickOtherAction) {
+        this.clickOtherAction = clickOtherAction;
     }
 
     private class InventoryItem {

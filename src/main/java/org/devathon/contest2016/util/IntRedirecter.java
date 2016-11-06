@@ -29,4 +29,12 @@ public class IntRedirecter {
         return redirects[i];
     }
 
+    public int reverseRedirect(int i) {
+        for (int i1 = 0; i1 < redirects.length; i1++) {
+            if (redirects[i1] == i)
+                return i1;
+        }
+        return -1;
+    }
+
 }

@@ -1,3 +1,8 @@
+# INFO FOR STAFF READ THIS
+There's a shitty bug in spigot that it sometimes doesn't trigger the inventoryclickevnet.
+If you set an item into the terminal and it just get removed, notice, that this doesn't happen because my plugin is shit, it happen because spigot doesn't trigger the inventoryclickevent. ._.
+
+
 # Devathon Project
 This is the base layout for your Devathon Project. It includes several scripts to make running incredibly easy on Windows, Mac, and Linux.
 
