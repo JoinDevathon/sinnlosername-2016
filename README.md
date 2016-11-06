@@ -7,9 +7,12 @@ Sometimes it happen very often, if you don't get any response when putting an it
 
 ***********************
 
-* Energy Collector
+Energy Collector
+
 SGS
+
 GDG
+
 SGS
 
 S = Sea Lantern
@@ -18,9 +21,12 @@ D = Diamond
 
 ***********************
 
-* Terminal
+Terminal
+
 DGD
+
 OSO
+
 SDS
 
 D = Diamond
@@ -31,8 +37,11 @@ S = Redstone Block
 ***********************
 
 * Jukebox
+
 RRR
+
 DGD
+
 RRR
 
 R = Redstone Block
@@ -42,8 +51,11 @@ D = Diamond
 ***********************
 
 * Storage
+
 GRG
+
 RER
+
 GRG
 
 G = Gold Ingot
@@ -53,8 +65,11 @@ E = Enderchest
 ***********************
 
 * Energy Crystal
+
 RDR
+
 DOD
+
 RDR
 
 R = Redstone Block
