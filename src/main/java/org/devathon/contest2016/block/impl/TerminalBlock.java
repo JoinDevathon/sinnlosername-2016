@@ -18,7 +18,9 @@ import org.devathon.contest2016.builder.impl.ThreadBuilder;
 import org.devathon.contest2016.inventory.ClickAction;
 import org.devathon.contest2016.inventory.InventoryMenu;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,8 +32,10 @@ public class TerminalBlock implements MachineBlock {
     private final Set<EnergyCollectorBlock> collectors = new HashSet<>();
     private final Set<IOModuleBlock> ioModules = new HashSet<>();
 
-    private final int energy = 0;
+    private int energy = 0;
 
+    private transient boolean changedItems = false;
+    private transient List<ItemStack> items = new ArrayList<>();
     private transient BukkitTask task;
     private transient int lastEnergy = -1;
     private transient InventoryMenu menu;
@@ -52,15 +56,119 @@ public class TerminalBlock implements MachineBlock {
         menu = new InventoryMenu(45, "§6§lTerminal");
         menu.setSame(greyGlass, ClickAction.CANCEL, 0, 1, 2, 6, 7, 8);
 
-
+        setupDefaultAction();
         updateCounters();
         updateEnergy();
+        startThread();
 
+
+    }
+
+    public void insertItem(ItemStack stack) {
+        if (stack == null) return;
+        if (alreadyIn(stack)) {
+
+            for (ItemStack item : items) {
+
+                if (!equalsNoAmount(item, stack)) continue;
+                if (item.getAmount() >= item.getMaxStackSize()) continue;
+
+                while (item.getAmount() < item.getMaxStackSize() && stack.getAmount() > 0) {
+
+                    item.setAmount(item.getAmount() + 1);
+                    stack.setAmount(stack.getAmount() - 1);
+
+                }
+
+                if (stack.getAmount() < 1) break;
+
+            }
+
+            if (stack.getAmount() > 0)
+                items.add(stack);
+
+        } else
+            items.add(stack);
+
+        changedItems = true;
+
+    }
+
+    public boolean alreadyIn(ItemStack stack) {
+        if (stack == null) throw new NullPointerException("Stack is null, dafuq?");
+        for (ItemStack item : items)
+            if (item != null && equalsNoAmount(item, stack))
+                return true;
+        return false;
+    }
+
+    public boolean equalsNoAmount(ItemStack i1, ItemStack i2) {
+        final int orig = i1.getAmount();
+        i1.setAmount(i2.getAmount());
+        final boolean equal = i1.equals(i2);
+        i1.setAmount(orig);
+        return equal;
+    }
+
+    @Override
+    public void serialize() {
+
+    }
+
+    public void setupDefaultAction() {
+        menu.setDefaultAction(e -> {
+
+            if (e.getCursor() == null || e.getCursor().getType() == Material.AIR) return;
+
+            insertItem(e.getCursor());
+            e.setCursor(new ItemStack(Material.AIR));
+
+        });
+    }
+
+    public void startThread() {
         task = Builder.of(ThreadBuilder.class).with(() -> {
 
+            collectors.forEach(c -> energy += Math.pow(20, c.getPower()));
+
+            // storages take energy
+            ioModules.forEach(m -> energy -= 50 * m.getStorages().size());
+
+            // ioModules take many energy
+            energy -= Math.pow(15, ioModules.size());
+
+            //terminal itself take energy
+            energy -= 10;
+
+            energy = energy < 0 ? 0 : energy;
+
+            // max energy: 1.000.000.000
+            energy = energy > 1000000000 ? 1000000000 : energy;
+
+            if (energy != lastEnergy) updateEnergy();
+            lastEnergy = energy;
 
 
+            if (!changedItems) {
+                menu.update();
+                return;
+            }
 
+            changedItems = false;
+
+            int i = 0;
+            while (i < items.size() && i < 29) {
+                final ItemStack stack = items.get(i);
+
+                menu.set(stack, DevathonPlugin.helper().redirecter().redirect(i + 1), menu.getDefaultAction());
+
+                i++;
+            }
+
+            while (i++ < 29)
+                menu.remove(DevathonPlugin.helper().redirecter().redirect(i));
+
+            menu.update();
 
         }).start(false, 20).build();
 
@@ -95,18 +203,6 @@ public class TerminalBlock implements MachineBlock {
         short glassType = 7;
         int height = 0;
 
-
-                /*
-        #0 #1 #2  #3 #4 #5  #6 #7 #8
-        #9 10 11  12 13 14  15 16 17
-        18 19 20  21 22 23  24 25 26
-        27 28 29  30 31 32  33 34 35
-        36 37 38  39 40 41  42 43 44
-
-         */
-
-
-        // 100.000.000
         if (energy > 10000000) {
             height = 4;
             glassType = 5;
@@ -114,7 +210,7 @@ public class TerminalBlock implements MachineBlock {
             height = 3;
             glassType = 4;
         } else if (energy > 5000) {
-            height = 1;
+            height = 2;
             glassType = 4;
         } else if (energy > 0) {
             height = 1;
@@ -143,6 +239,8 @@ public class TerminalBlock implements MachineBlock {
             hc++;
         }
 
+        menu.update();
+
 
     }
 
@@ -169,7 +267,7 @@ public class TerminalBlock implements MachineBlock {
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
-
+        if (task != null) task.cancel();
         e.getPlayer().sendMessage("You broke a terminal");
     }
 

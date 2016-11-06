@@ -17,16 +17,22 @@ public class InventoryListener implements Listener {
     public void onClick(InventoryClickEvent e) {
 
         if (e.getClickedInventory() == null) return;
+        if (e.getClickedInventory().getName() == null) return;
 
         for (InventoryMenu menu : InventoryMenu.getMenus()) {
-            if (!menu.getViewers().contains(e.getWhoClicked())) continue;
+            if (!menu.getViewers().contains(e.getWhoClicked()) || !menu.getName().equals(e.getClickedInventory().getName())) continue;
 
             final ClickAction action = menu.getAction(e.getSlot());
 
-            if (action == null) continue;
+            if (action == null) {
+                menu.getDefaultAction().click(e);
+                continue;
+            }
 
             action.click(e);
         }
+
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

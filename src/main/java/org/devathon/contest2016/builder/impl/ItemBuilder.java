@@ -1,6 +1,8 @@
 package org.devathon.contest2016.builder.impl;
 
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.devathon.contest2016.builder.Builder;
@@ -40,6 +42,12 @@ public class ItemBuilder implements Builder<ItemStack> {
 
     public ItemBuilder lore(String... lore) {
         meta.setLore(Arrays.asList(lore));
+        return this;
+    }
+
+    public ItemBuilder glow() {
+        meta.addEnchant(Enchantment.ARROW_DAMAGE, 1, true);
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         return this;
     }
 

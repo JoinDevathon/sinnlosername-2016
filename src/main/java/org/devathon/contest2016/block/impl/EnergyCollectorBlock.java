@@ -1,6 +1,7 @@
 package org.devathon.contest2016.block.impl;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -12,6 +13,8 @@ import org.devathon.contest2016.block.BlockManager;
 import org.devathon.contest2016.block.BlockType;
 import org.devathon.contest2016.block.MachineBlock;
 import org.devathon.contest2016.block.SerializeableLocation;
+import org.devathon.contest2016.builder.Builder;
+import org.devathon.contest2016.builder.impl.ItemBuilder;
 
 /**
  * Created by Florian on 05.11.16 in org.devathon.contest2016.block.impl
@@ -53,20 +56,51 @@ public class EnergyCollectorBlock implements MachineBlock {
         terminal.getCollectors().add(this);
         terminal.updateCounters();
 
-        e.getPlayer().sendMessage("You placed an energy collector! :o");
+        e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§aSuccessfully connected!");
+
     }
 
     @Override
     public void interact(PlayerInteractEvent e) {
-        e.setCancelled(true);
-        e.getPlayer().sendMessage("You interacted with an energy collector");
+
+        if (DevathonPlugin.helper().equals(e.getItem(), DevathonPlugin.CRYSTAL_NAME, Material.DIAMOND)) {
+
+            if (power >= 5) {
+                e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§cThis Energy Collector reached the max level!");
+                e.setCancelled(true);
+                return;
+            }
+
+            e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§aUpgraded Energy Collector to level §b" + (++power));
+
+            final ItemStack crystals = e.getPlayer().getInventory().getItemInMainHand();
+
+            crystals.setAmount(crystals.getAmount() - 1);
+            if (crystals.getAmount() < 1) crystals.setType(Material.AIR);
+
+            e.getPlayer().getInventory().setItemInMainHand(crystals);
+        } else
+            e.setCancelled(true);
+
     }
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
         terminal.getCollectors().remove(this);
         terminal.updateCounters();
-        e.getPlayer().sendMessage("Your broke an energy collector");
+
+        e.setCancelled(true);
+        e.getBlock().setType(Material.AIR);
+
+        final Location loc = e.getBlock().getLocation().clone();
+        DevathonPlugin.helper().mid(loc);
+
+        if (power > 1)
+            e.getBlock().getWorld().dropItemNaturally(loc,
+                    Builder.of(ItemBuilder.class).item(Material.DIAMOND, power - 1).name(DevathonPlugin.CRYSTAL_NAME).glow().build());
+
+        e.getBlock().getWorld().dropItemNaturally(loc, Builder.of(ItemBuilder.class).item(Material.SEA_LANTERN).name(ITEM_NAME).build());
+
     }
 
     @Override

@@ -28,4 +28,5 @@ public class ThreadBuilder implements Builder<BukkitTask> {
     public BukkitTask build() {
         return task;
     }
+
 }

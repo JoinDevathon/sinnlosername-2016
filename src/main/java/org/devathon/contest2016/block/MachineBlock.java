@@ -30,4 +30,7 @@ public interface MachineBlock extends Serializable {
 
     TerminalBlock getTerminal();
 
+    default void serialize() {
+    }
+
 }

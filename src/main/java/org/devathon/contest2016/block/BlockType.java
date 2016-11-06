@@ -18,33 +18,25 @@ public enum BlockType {
     STORAGE(StorageBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return itemInHand.getType() == Material.ENDER_CHEST && itemInHand != null
-                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
-                    && itemInHand.getItemMeta().getDisplayName().equals(StorageBlock.ITEM_NAME);
+            return DevathonPlugin.helper().equals(itemInHand, StorageBlock.ITEM_NAME, Material.ENDER_CHEST);
         }
     },
     IO_MODULE(IOModuleBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return itemInHand.getType() == Material.JUKEBOX && itemInHand != null
-                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
-                    && itemInHand.getItemMeta().getDisplayName().equals(IOModuleBlock.ITEM_NAME);
+            return DevathonPlugin.helper().equals(itemInHand, IOModuleBlock.ITEM_NAME, Material.JUKEBOX);
         }
     },
     ENERGIE_COLLECTOR(EnergyCollectorBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return itemInHand.getType() == Material.SEA_LANTERN && itemInHand != null
-                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
-                    && itemInHand.getItemMeta().getDisplayName().equals(EnergyCollectorBlock.ITEM_NAME);
+            return DevathonPlugin.helper().equals(itemInHand, EnergyCollectorBlock.ITEM_NAME, Material.SEA_LANTERN);
         }
     },
     TERMINAL(TerminalBlock.class) {
         @Override
         public boolean is(ItemStack itemInHand) {
-            return itemInHand.getType() == Material.WORKBENCH && itemInHand != null
-                    && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasDisplayName()
-                    && itemInHand.getItemMeta().getDisplayName().equals(TerminalBlock.ITEM_NAME);
+            return DevathonPlugin.helper().equals(itemInHand, TerminalBlock.ITEM_NAME, Material.WORKBENCH);
         }
     };
 
