@@ -23,6 +23,12 @@ public class ItemBuilder implements Builder<ItemStack> {
         return this;
     }
 
+    public ItemBuilder item(ItemStack stack) {
+        this.stack = stack;
+        this.meta = stack.getItemMeta();
+        return this;
+    }
+
     public ItemBuilder item(Material m, int amount) {
         stack = new ItemStack(m, amount);
         meta = stack.getItemMeta();

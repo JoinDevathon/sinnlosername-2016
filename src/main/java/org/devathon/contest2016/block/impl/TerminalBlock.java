@@ -355,7 +355,8 @@ public class TerminalBlock implements MachineBlock {
         // collector count
         menu.set(Builder.of(ItemBuilder.class)
                 .item(Material.SEA_LANTERN, collectors.size()).name(EnergyCollectorBlock.ITEM_NAME)
-                .lore("§aConntected: §7" + collectors.size(), "§aEnergy/s: §7" + energy).build(), 4, ClickAction.CANCEL);
+                .lore("§aConntected: §7" + collectors.size(), "§aEnergy/s: §7" +
+                        DevathonPlugin.helper().formatNumber(String.valueOf(energy))).build(), 4, ClickAction.CANCEL);
 
         // storage count
         int cCount = 0;
@@ -364,7 +365,7 @@ public class TerminalBlock implements MachineBlock {
 
         menu.set(Builder.of(ItemBuilder.class)
                 .item(Material.ENDER_CHEST, cCount).name(StorageBlock.ITEM_NAME)
-                .lore("§aConntected: §7" + cCount, "§aMaxStorage: §7" + maxStorage()).build(), 5, ClickAction.CANCEL);
+                .lore("§aConntected: §7" + cCount, "§aMaxStorage: §7" + DevathonPlugin.helper().formatNumber(String.valueOf(maxStorage()))).build(), 5, ClickAction.CANCEL);
 
         menu.update();
     }
@@ -390,22 +391,23 @@ public class TerminalBlock implements MachineBlock {
 
         int hc = 0;
 
-        while (hc <= height) {
+        final String energyString = DevathonPlugin.helper().formatNumber(String.valueOf(energy));
+        while (hc < height) {
             menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, glassType)
-                    .name("§a§lEnergy: §7" + energy).build(), 36 - (hc * 9), ClickAction.CANCEL);
+                    .name("§a§lEnergy: §7" + energyString).build(), 36 - (hc * 9), ClickAction.CANCEL);
 
             menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, glassType)
-                    .name("§a§lEnergy: §7" + energy).build(), 44 - (hc * 9), ClickAction.CANCEL);
+                    .name("§a§lEnergy: §7" + energyString).build(), 44 - (hc * 9), ClickAction.CANCEL);
 
             hc++;
         }
 
         while (hc < 4) {
             menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 7)
-                    .name("§a§lEnergy: §7" + energy).build(), 36 - (hc * 9), ClickAction.CANCEL);
+                    .name("§a§lEnergy: §7" + energyString).build(), 36 - (hc * 9), ClickAction.CANCEL);
 
             menu.set(Builder.of(ItemBuilder.class).item(Material.STAINED_GLASS_PANE, 1, (short) 7)
-                    .name("§a§lEnergy: §7" + energy).build(), 44 - (hc * 9), ClickAction.CANCEL);
+                    .name("§a§lEnergy: §7" + energyString).build(), 44 - (hc * 9), ClickAction.CANCEL);
 
             hc++;
         }

@@ -44,7 +44,7 @@ public class Helper<T extends JavaPlugin> {
     }
 
     public boolean equals(ItemStack stack, String name, Material type) {
-        return stack.getType() == type && stack != null
+        return stack != null && stack.getType() == type
                 && stack.hasItemMeta() && stack.getItemMeta().hasDisplayName()
                 && stack.getItemMeta().getDisplayName().equals(name);
     }
@@ -58,4 +58,25 @@ public class Helper<T extends JavaPlugin> {
     public IntRedirecter redirecter() {
         return redirecter;
     }
+
+
+    public String formatNumber(String num) {
+        final int length = num.length();
+
+        if (length < 4) return num;
+
+        final int start = length % 3;
+        int i = 3 - start;
+
+        final StringBuilder b = new StringBuilder();
+
+        for (char c : num.toCharArray()) {
+            b.append(c);
+            if (++i % 3 == 0) b.append('.');
+        }
+
+
+        return b.deleteCharAt(b.length() - 1).toString();
+    }
+
 }

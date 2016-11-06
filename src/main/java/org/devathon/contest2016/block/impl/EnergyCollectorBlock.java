@@ -86,8 +86,8 @@ public class EnergyCollectorBlock implements MachineBlock {
 
     @Override
     public void breakBlock(BlockBreakEvent e) {
-        terminal.getCollectors().remove(this);
-        terminal.updateCounters();
+        if (terminal != null) terminal.getCollectors().remove(this);
+        if (terminal != null) terminal.updateCounters();
 
         e.setCancelled(true);
         e.getBlock().setType(Material.AIR);

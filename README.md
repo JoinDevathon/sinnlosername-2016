@@ -1,6 +1,67 @@
-# INFO FOR STAFF READ THIS
+# INFO FOR STAFF READ THIS (INVENTORY BUG)
 There's a shitty bug in spigot that it sometimes doesn't trigger the inventoryclickevnet.
 If you set an item into the terminal and it just get removed, notice, that this doesn't happen because my plugin is shit, it happen because spigot doesn't trigger the inventoryclickevent. ._.
+Sometimes it happen very often, if you don't get any response when putting an item into the terminal it happened. :/
+
+# Crafting recipes
+
+***********************
+
+* Energy Collector
+SGS
+GDG
+SGS
+
+S = Sea Lantern
+G = Gold Block
+D = Diamond
+
+***********************
+
+* Terminal
+DGD
+OSO
+SDS
+
+D = Diamond
+O = Obsidian
+G = Gold Ingot
+S = Redstone Block
+
+***********************
+
+* Jukebox
+RRR
+DGD
+RRR
+
+R = Redstone Block
+G = Glass
+D = Diamond
+
+***********************
+
+* Storage
+GRG
+RER
+GRG
+
+G = Gold Ingot
+R = Redstone
+E = Enderchest
+
+***********************
+
+* Energy Crystal
+RDR
+DOD
+RDR
+
+R = Redstone Block
+D = Diamond
+O = Obsidian
+
+***********************
 
 
 # Devathon Project

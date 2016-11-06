@@ -67,6 +67,15 @@ public class StorageBlock implements MachineBlock {
     @Override
     public void breakBlock(BlockBreakEvent e) {
 
+        int wouldBe = ioModule.getTerminal().maxStorage() - 1152;
+        wouldBe = wouldBe < 0 ? 0 : wouldBe;
+
+        if (wouldBe < ioModule.getTerminal().totalItemCount()) {
+            e.getPlayer().sendMessage(DevathonPlugin.PREFIX + "§cYou can't break this storage block because there are items stored in it!");
+            e.setCancelled(true);
+            return;
+        }
+
         ioModule.getStorages().remove(this);
         ioModule.getTerminal().updateCounters();
 
